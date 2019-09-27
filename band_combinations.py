@@ -19,12 +19,12 @@ class BandCombination:
         np.seterr(divide='ignore', invalid='ignore')
 
     def __enter__(self):
-        self.raster = rasterio.open(self.raster_path, mode='r', driver='GTiff')
+        self.raster = rasterio.open(self.raster_path, mode='r', driver='ENVI')
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.raster.close()
 
-    def get_band_pixel_values(self, which_band: BandTable, array_type: str = 'float32') -> np.ndarray:
+    def get_band_pixel_values(self, which_band: BandTable, array_type: str = 'uint16') -> np.ndarray:
         band = self.raster.read(which_band.value)
         return band.astype(array_type)
 
@@ -40,7 +40,8 @@ class BandCombination:
 
     def build_output_profile(self) -> property:
         profile = self.raster.profile
-        profile.update(count=3, dtype=rasterio.float32, compress=Compression.packbits.value)
+        profile.update(count=3, compress=Compression.packbits.value, driver='GTiff', tiled=True, interleave='PIXEL',
+                       photometric='RGB')
 
         return profile
 
